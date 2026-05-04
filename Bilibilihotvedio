@@ -1,0 +1,34 @@
+# 项目用途：Python爬虫编程学习练手
+# 爬取内容：B站公开热门视频的标题、作者、播放量、公开链接
+# 合规说明：仅爬取平台公开数据，严禁商用、批量爬取、破解视频、爬取隐私
+# 使用者需遵守B站用户协议、robots协议及国家网络安全法规
+import requests
+import csv
+import time
+url = "https://api.bilibili.com/x/web-interface/popular?ps=20&pn=1"
+headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
+try:
+    res = requests.get(url,headers=headers,timeout=5)
+    res.encoding = "utf-8"
+    code = res.status_code
+    data = res.json()
+    video_data = []
+    print(data)
+    if code == 200:
+        print("爬取成功!")
+        for item in data["data"]["list"]:
+            title = item["title"]
+            author = item["owner"]["name"]
+            play_time = item["stat"]["view"]
+            link = f"https://www.bilibili.com/video/{item['bvid']}"
+            video_data.append([title,author,play_time,link])
+            time.sleep(1)
+        with open("B站热门视频信息2.csv",'w',encoding="utf-8-sig",newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["标题","作者","浏览量","链接"])
+            writer.writerows(video_data)
+        print(f"你成功爬取了{len(video_data)}条视频。")
+    else:
+        print(f"请求失败!状态码:{res.status_code}")
+except Exception as e:
+    print("爬取出错!",e)
